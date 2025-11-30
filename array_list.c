@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "array_list.h"
+#include "array-list.h"
 
 //Los array list empiezan con un numero minimo de elementos que seria esta constante
 #define DEFAULT_CAPACITY 10
@@ -13,7 +13,7 @@ ArrayList* arraylist_create(int initial_capacity, int element_size){
 	//El desarrollador puede escoger una capacidad inicial custom, pero si no la define 
 	//Se va con la capacidad por defecto
 	if(initial_capacity <= 0){
-		initial_capacity =DEFAULT_CAPACITY;
+		initial_capacity = DEFAULT_CAPACITY;
 	}
 	
 	ArrayList *list = (ArrayList*)malloc(sizeof(ArrayList));
@@ -22,7 +22,7 @@ ArrayList* arraylist_create(int initial_capacity, int element_size){
 		return NULL;	
 	}
 	
-	list->data = (void***)mallo(sizeof(void*) * initial_capacity);
+	list->data = (void**)malloc(sizeof(void*) * initial_capacity);
 	if(list->data == NULL){
 		free(list);
 		printf("No se pudo solicitar memoria para los datos de la lista\n");
@@ -32,9 +32,11 @@ ArrayList* arraylist_create(int initial_capacity, int element_size){
 	list->size = 0;
 	list->capacity = initial_capacity;
 	list->element_size = element_size;
+	
+	return list;
 }
 	
-void arraylist_destroy(Arraylist * list){
+void arraylist_destroy(ArrayList * list){
 	if(list == NULL){
 		return;
 	}
@@ -44,7 +46,7 @@ void arraylist_destroy(Arraylist * list){
 	free(list);
 }
 	
-void arraylist_add(ArrayList *list, void element){
+void arraylist_add(ArrayList *list, void *element){
 	if(list == NULL || element == NULL){
 		return;
 	}
@@ -62,7 +64,7 @@ void arraylist_add(ArrayList *list, void element){
 }
 	
 void arraylist_insert(ArrayList *list, void *element, int index){
-	if(list == NULL || element == NULL || index < 0){
+	if(list == NULL || element == NULL || index <= 0){
 		return;
 	}
 	if(list->size >= list->capacity){
@@ -84,18 +86,18 @@ void arraylist_insert(ArrayList *list, void *element, int index){
 }
 	
 void *arraylist_get(ArrayList *list, int index){
-	if(list == NULL || index > list->size || index < 0){
-		return;
+	if(list == NULL || index >= list->size || index < 0){
+		return NULL;
 	}
 	return list->data[index];
 }
 	
 int arraylist_remove(ArrayList *list, int index){
-	if(list == NULL || index > list->size || index < 0){
-		return NULL;
+	if(list == NULL || index >= list->size || index < 0){
+		return 0;
 	}
 	free(list->data[index]);
-	for(int i=index; i<list->size; i++){
+	for(int i=index; i<list->size-1 ; i++){
 		list->data[i] = list->data[i+1];
 	}
 	list->size--;
@@ -113,18 +115,20 @@ void arraylist_ensure_capacity(ArrayList *list, int min_capacity){
 		printf("Error al reasignar memoria\n");
 		return;
 	}
+	
+	list->data = new_data;
+	list->capacity = min_capacity;
 }
 	
-void arraylist_clear(ArrayList * list){
-	if(list == NULL){
-		return;
+	void arraylist_clear(ArrayList * list){
+		if(list == NULL){
+			return;
+		}
+		
+		for(int i=0; i<list->size; i++){
+			free(list->data[i]);
+			list->data[i] = NULL; 
+		}
+		
+		list->size = 0;
 	}
-	
-	for(int i=0; i<list->size; i++){
-		free(list->data[i]);
-		list->data[i] = NULL; 
-	}
-	
-	list->size = 0;
-}
-	
